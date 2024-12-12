@@ -1,0 +1,22 @@
+{
+  "name": "markdown-file-browser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "open": "^10.1.0",
+    "puppeteer": "^23.10.3",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.6.1"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "description": ""
+}

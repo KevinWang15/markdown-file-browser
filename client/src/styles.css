@@ -1,0 +1,51 @@
+body {
+    font-family: "Arial", sans-serif;
+    margin: 20px;
+    background: #f8f9fa;
+}
+
+.container {
+    background: #ffffff;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+    margin-top: 1.5rem;
+}
+
+p {
+    line-height: 1.6;
+    margin: 1em 0;
+}
+
+code {
+    background: rgb(248, 248, 248);
+    padding: 0.2em 0.2rem;
+}
+
+pre {
+    padding: 0.8rem 1.2rem!important;
+}
+
+pre > code {
+    background: none;
+    padding: 0;
+}
+
+blockquote {
+    border-left: 8px solid rgb(230, 230, 230);
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
