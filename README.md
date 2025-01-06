@@ -1,13 +1,14 @@
 # Markdown File Browser
 
-This project allows you to browse and view multiple Markdown files stored in a `./docs` directory, and now **export the currently viewed Markdown file as a PDF** via a single click!
+This project allows you to browse and view multiple Markdown files stored in a `./docs` directory, export the currently viewed Markdown file as a PDF, and features live reloading of Markdown content.
 
 ## Major Features
 
 - **File Listing**: Automatically list all `.md` files in `./docs` when visiting the root URL `/`.
 - **Markdown Rendering**: Uses [`react-markdown`](https://github.com/remarkjs/react-markdown) for flexible and customizable Markdown rendering.
 - **Syntax Highlighting**: Integrates with `react-syntax-highlighter` for code block highlighting.
-- **PDF Export**: Easily generate a PDF of the currently viewed Markdown page. This feature uses Puppeteer to render the page headlessly, ensuring the PDF looks just like what you see in the browser—except the "Save to PDF" button is automatically hidden to produce a clean, professional PDF.
+- **PDF Export**: Easily generate a PDF of the currently viewed Markdown page.
+- **Live Reload**: Automatically updates the rendered Markdown content when the source file changes, without losing your scroll position.
 - **Development Flexibility**: Run server and client independently for development. Enjoy hot reloading from the React dev server at `http://localhost:3000`.
 
 ## Getting Started
@@ -72,7 +73,21 @@ You can run the server and the React dev server separately for a better developm
 
 Visiting `http://localhost:3000` now provides hot-reload, enabling faster iterative development and styling tweaks using `react-markdown`.
 
-### New: Export to PDF
+## Live Reload
+
+**How It Works:**
+
+1. The server uses `chokidar` to watch for changes in the `./docs` directory.
+2. When a Markdown file is modified, the server notifies connected clients using Server-Sent Events (SSE).
+3. The client, upon receiving the notification, fetches the updated content if it's currently viewing the changed file.
+4. The new content is rendered without a full page reload, maintaining the user's scroll position.
+
+**Benefits:**
+- Instant updates: See your changes immediately as you edit Markdown files.
+- Seamless experience: No need to manually refresh the page.
+- Maintained context: Keeps your scroll position, making it easy to review changes.
+
+## Export to PDF
 
 **How It Works:**
 
@@ -91,34 +106,41 @@ Visiting `http://localhost:3000` now provides hot-reload, enabling faster iterat
 - Perfect for documentation, articles, guides, or knowledge bases.
 - Eliminates the need for separate PDF generation tooling—do it all from the browser.
 
-### How It Works Internally
+## How It Works Internally
 
 - **Server (`index.js`)**:
+    - Uses `chokidar` to watch for file changes in `./docs`.
+    - Implements an SSE endpoint (`/sse`) to notify clients of file changes.
     - `GET /api/markdown`: returns a list of `.md` files in `./docs`.
     - `GET /api/markdown/:file`: returns the contents of a specific `.md` file.
-    - **`GET /api/export/pdf?file=<filename>.md`**: launches Puppeteer, navigates to `<filename>.md`, and returns a PDF of the rendered page.
+    - `GET /api/export/pdf?file=<filename>.md`: launches Puppeteer, navigates to `<filename>.md`, and returns a PDF of the rendered page.
 
 - **Client (`client/src/App.js`)**:
+    - Establishes an SSE connection to receive file change notifications.
+    - When a change is detected for the current file:
+        1. Stores the current scroll position relative to the closest heading.
+        2. Fetches and renders the updated content.
+        3. Restores the scroll position after rendering.
     - `/` (root): Fetches `/api/markdown` and displays the list of `.md` files.
-    - `/<filename>.md`: Fetches `/api/markdown/<filename>.md` and displays the file’s content.
-    - **"Save to PDF" button**: Calls `/api/export/pdf` to retrieve a generated PDF file.
+    - `/<filename>.md`: Fetches `/api/markdown/<filename>.md` and displays the file's content.
+    - "Save to PDF" button: Calls `/api/export/pdf` to retrieve a generated PDF file.
 
 Because we use `react-markdown`, you can customize the Markdown rendering extensively. Add custom renderers, plugins, or styling to achieve the desired look, which will also be reflected in the exported PDF.
 
-### Customization
+## Customization
 
 - **Adding Markdown Files**: Add `.md` files to `./docs` to make them automatically appear in the listing.
 - **URL Paths**: Navigate directly to `/<filename>.md` to view a specific file.
 - **Rendering Styles**: Modify `App.js` or add `react-markdown` plugins and custom renderers to change the appearance of rendered Markdown.
 - **PDF Styles**: Since Puppeteer uses print styles for generating PDFs, you can leverage `@media print` CSS rules to fine-tune the PDF appearance.
 
-### Troubleshooting
+## Troubleshooting
 
 - **No Files?** Ensure `.md` files are placed inside `./docs`.
 - **File Not Found**: Confirm the filename in the URL matches an existing `.md` file exactly.
 - **PDF Generation Issues**: Ensure Puppeteer is installed correctly. Run `npm install puppeteer`. Also, check that Chromium can run in your environment (especially on some Linux servers).
-- **Binary PDF Output**: We return the PDF as binary data. Make sure you’re not trying to parse it as JSON.
+- **Live Reload Not Working**: Ensure the server has read permissions for the `./docs` directory and that file changes are being detected by `chokidar`.
 
-### License
+## License
 
 This project is licensed under the [MIT License](./LICENSE).

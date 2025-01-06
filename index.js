@@ -2,6 +2,7 @@ import express from 'express';
 import { dirname, join, resolve } from 'path';
 import { readFileSync, readdirSync } from 'fs';
 import open from 'open';
+import cors from 'cors';
 import { fileURLToPath } from 'url';
 import puppeteer from 'puppeteer';
 import chokidar from 'chokidar';
@@ -30,6 +31,8 @@ watcher.on('change', (filePath) => {
 
 
 const app = express();
+
+app.use(cors());
 
 // Serve the React build output
 app.use(express.static(join(__dirname, 'client', 'build')));
