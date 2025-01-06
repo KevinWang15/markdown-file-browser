@@ -6,6 +6,7 @@
     "doc": "docs"
   },
   "dependencies": {
+    "chokidar": "^4.0.3",
     "express": "^4.21.2",
     "mermaid": "^11.4.1",
     "open": "^10.1.0",
