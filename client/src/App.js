@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import {Light as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {github} from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import mermaid from 'mermaid';
+import remarkGfm from 'remark-gfm';
 import './styles.css';
 
 import * as AllLanguages from 'react-syntax-highlighter/dist/esm/languages/hljs';
@@ -175,6 +176,7 @@ function App() {
             </div>
             <ReactMarkdown
                 children={markdown}
+                remarkPlugins={[remarkGfm]}
                 components={{
                     code({node, inline, className, children, ...props}) {
                         const match = /language-([\w-]+)/.exec(className || '');
