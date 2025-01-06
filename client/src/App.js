@@ -4,12 +4,16 @@ import {Light as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {github} from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import mermaid from 'mermaid';
 import remarkGfm from 'remark-gfm';
+import { Tooltip } from 'react-tooltip'
 import './styles.css';
 
 import * as AllLanguages from 'react-syntax-highlighter/dist/esm/languages/hljs';
 import treeview from "./highlighters/treeview";
 import pathex from "./highlighters/pathex";
 import apiEndpoints from "./highlighters/api-endpoints";
+
+// Import Lucide Icon
+import { Download,Loader } from 'lucide-react';
 
 // Initialize mermaid
 mermaid.initialize({
@@ -212,6 +216,7 @@ function App() {
         }
     }, [pathname]);
 
+
     const handleExportPDF = async () => {
         setLoadingPDF(true);
         const fileName = pathname.slice(1);
@@ -252,40 +257,56 @@ function App() {
     }
 
     return (
-        <div className="container">
-            <div style={{marginBottom: '20px'}}>
-                <button className="save-pdf-button" onClick={handleExportPDF} disabled={loadingPDF}>
-                    {loadingPDF ? 'Generating PDF...' : 'Save to PDF'}
+        <div className="app-container">
+            {/* Side Button Bar */}
+            <div className="side-button-bar">
+                <button
+                    className="save-pdf-button"
+                    onClick={handleExportPDF}
+                    disabled={loadingPDF}
+                    data-tooltip-id='save-pdf-button'
+                    data-tooltip-content="Save to PDF"
+                >
+                    {loadingPDF ? (
+                        <Loader className="spinner" size={24} />
+                    ) : (
+                        <Download size={24} />
+                    )}
                 </button>
+                <Tooltip id="save-pdf-button" />
             </div>
-            <ReactMarkdown
-                children={markdown}
-                remarkPlugins={[remarkGfm]}
-                components={{
-                    code({node, inline, className, children, ...props}) {
-                        const match = /language-([\w-]+)/.exec(className || '');
-                        const language = match ? match[1] : '';
 
-                        if (!inline) {
-                            if (language === 'mermaid') {
-                                return <MermaidDiagram chart={String(children).replace(/\n$/, '')}/>;
+            {/* Main Content */}
+            <div className="main-content">
+                <ReactMarkdown
+                    children={markdown}
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                        code({node, inline, className, children, ...props}) {
+                            const match = /language-([\w-]+)/.exec(className || '');
+                            const language = match ? match[1] : '';
+
+                            if (!inline) {
+                                if (language === 'mermaid') {
+                                    return <MermaidDiagram chart={String(children).replace(/\n$/, '')}/>;
+                                }
+
+                                return (
+                                    <SyntaxHighlighter language={language} style={github} {...props}>
+                                        {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                );
                             }
 
                             return (
-                                <SyntaxHighlighter language={language} style={github} {...props}>
-                                    {String(children).replace(/\n$/, '')}
-                                </SyntaxHighlighter>
+                                <code className={className} {...props}>
+                                    {children}
+                                </code>
                             );
                         }
-
-                        return (
-                            <code className={className} {...props}>
-                                {children}
-                            </code>
-                        );
-                    }
-                }}
-            />
+                    }}
+                />
+            </div>
         </div>
     );
 }
