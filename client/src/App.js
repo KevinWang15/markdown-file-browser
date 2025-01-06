@@ -322,7 +322,7 @@ function App() {
         if (node) {
             let mainContent = document.getElementsByClassName('main-content')[0];
             mainContent.scrollTo({
-                top: node.getBoundingClientRect().top + node.parentElement.scrollTop - 50,
+                top: node.getBoundingClientRect().top + node.parentElement.scrollTop - 20,
                 behavior: 'smooth',
             });
         }
