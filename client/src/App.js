@@ -53,6 +53,47 @@ function App() {
     const [files, setFiles] = useState([]);
     const [loadingPDF, setLoadingPDF] = useState(false);
     const pathname = window.location.pathname;
+    useEffect(() => {
+        // Only subscribe to SSE if we’re viewing a specific file (pathname !== '/')
+        if (pathname !== '/') {
+            const sse = new EventSource('/sse');
+
+            // Listen for our custom 'file-changed' event
+            sse.addEventListener('file-changed', (event) => {
+                // The event data is the changed filename, e.g. "README.md"
+                const changedFileName = event.data;
+
+                // Our local fileName is `pathname.slice(1)` => "README.md"
+                const currentFile = pathname.slice(1);
+
+                // If the changed file is the one we're currently viewing, refresh
+                if (changedFileName === currentFile) {
+                    // 1) store the current scroll position:
+                    const scrollPos = window.scrollY;
+
+                    // 2) re-fetch the current markdown
+                    fetch(`/api/markdown/${currentFile}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.content) {
+                                // Update state, which triggers a re-render
+                                setMarkdown(data.content);
+                                // 3) restore scroll
+                                // We do it in a setTimeout(…, 0) or requestAnimationFrame
+                                // to ensure the DOM has updated:
+                                setTimeout(() => {
+                                    window.scrollTo(0, scrollPos);
+                                }, 0);
+                            }
+                        });
+                }
+            });
+
+            return () => {
+                sse.close();
+            };
+        }
+    }, [pathname]);
 
     useEffect(() => {
         if (pathname === '/') {

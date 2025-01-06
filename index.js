@@ -4,11 +4,30 @@ import { readFileSync, readdirSync } from 'fs';
 import open from 'open';
 import { fileURLToPath } from 'url';
 import puppeteer from 'puppeteer';
+import chokidar from 'chokidar';
 
+
+let sseConnections = [];  // Will store SSE client connections
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const docsDir = resolve(__dirname, 'docs');
+
+
+// Initialize a watcher for your docs directory
+const watcher = chokidar.watch(docsDir, { ignoreInitial: true });
+
+// When a file in ./docs changes, notify all SSE clients
+watcher.on('change', (filePath) => {
+    const changedFile = filePath.split(/[/\\]/).pop(); // just get the filename
+    console.log(`[chokidar] File changed: ${changedFile}`);
+
+    // Send event to all SSE clients
+    sseConnections.forEach((res) => {
+        res.write(`event: file-changed\ndata: ${changedFile}\n\n`);
+    });
+});
+
 
 const app = express();
 
@@ -95,6 +114,22 @@ app.get('/api/export/pdf', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Failed to generate PDF' });
     }
+});
+
+app.get('/sse', (req, res) => {
+    // Mandatory headers for SSE
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    // Push this response object into our global array
+    sseConnections.push(res);
+
+    // Remove the response when the client disconnects
+    req.on('close', () => {
+        sseConnections = sseConnections.filter((conn) => conn !== res);
+    });
 });
 
 // Fallback: serve the React app for any other route
