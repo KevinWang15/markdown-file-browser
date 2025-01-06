@@ -4,16 +4,13 @@ import {Light as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {github} from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import mermaid from 'mermaid';
 import remarkGfm from 'remark-gfm';
-import { Tooltip } from 'react-tooltip'
+import {Tooltip} from 'react-tooltip';
 import './styles.css';
-
 import * as AllLanguages from 'react-syntax-highlighter/dist/esm/languages/hljs';
 import treeview from "./highlighters/treeview";
 import pathex from "./highlighters/pathex";
 import apiEndpoints from "./highlighters/api-endpoints";
-
-// Import Lucide Icon
-import { Download,Loader } from 'lucide-react';
+import {Download, Loader, Menu} from 'lucide-react';
 
 // Initialize mermaid
 mermaid.initialize({
@@ -68,11 +65,40 @@ const MermaidDiagram = ({chart}) => {
     return <div dangerouslySetInnerHTML={{__html: svg}}/>;
 };
 
+// TOC Overlay Component
+const TOCOverlay = ({toc, onNavigate, currentSection}) => {
+    return (
+        <div className="toc-overlay" role="navigation" aria-label="Table of Contents">
+            <h3>Table of Contents</h3>
+            <ul>
+                {toc.map((item, index) => (
+                    <li key={index}
+                        className={`toc-item level-${item.level} ${currentSection === item.id ? 'active' : ''}`}>
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onNavigate(item.node);
+                            }}
+                            tabIndex="0"
+                        >
+                            {item.text}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
 function App() {
     const [markdown, setMarkdown] = useState('');
     const [files, setFiles] = useState([]);
     const [loadingPDF, setLoadingPDF] = useState(false);
     const pathname = window.location.pathname;
+
+    const [toc, setToc] = useState([]);
+    const [currentSection, setCurrentSection] = useState(null);
 
     // Get XPath of closest heading
     const getClosestHeadingXPath = () => {
@@ -221,6 +247,66 @@ function App() {
         }
     }, [pathname]);
 
+    useEffect(() => {
+        const handleScroll = () => {
+            const mainContent = document.getElementsByClassName('main-content')[0];
+            if (!mainContent) {
+                return;
+            }
+
+            const headings = mainContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            const scrollPosition = window.scrollY + 100; // Adjust as needed
+
+            let current = null;
+
+            headings.forEach((heading) => {
+                if (heading.offsetTop <= scrollPosition) {
+                    current = heading.id;
+                }
+            });
+
+            if (current !== currentSection) {
+                setCurrentSection(current);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [currentSection]);
+
+    // Extract TOC from rendered HTML using ref
+    useEffect(() => {
+        const extractTOC = () => {
+            const mainContent = document.getElementsByClassName('main-content')[0];
+
+            if (!mainContent) return;
+            const headings = mainContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            const tocItems = [];
+
+            headings.forEach((heading) => {
+                const level = parseInt(heading.tagName.substring(1));
+                const text = heading.textContent;
+                tocItems.push({level, text, node: heading});
+            });
+
+            setToc(tocItems);
+        };
+
+        extractTOC();
+    }, [markdown]); // Run whenever markdown changes
+
+    const handleNavigate = (node) => {
+        if (node) {
+            let mainContent = document.getElementsByClassName('main-content')[0];
+            mainContent.scrollTo({
+                top: node.getBoundingClientRect().top + node.parentElement.scrollTop - 50,
+                behavior: 'smooth',
+            });
+        }
+    };
 
     const handleExportPDF = async () => {
         setLoadingPDF(true);
@@ -265,6 +351,20 @@ function App() {
         <div className="app-container">
             {/* Side Button Bar */}
             <div className="side-button-bar">
+                {toc.length > 0 && (
+                    <div className="toc-button-container">
+                        <button
+                            className="toc-button"
+                        >
+                            <Menu size={24}/>
+                        </button>
+                        <div className="toc-overlay-container">
+                            <TOCOverlay toc={toc} onNavigate={handleNavigate} currentSection={currentSection}/>
+                        </div>
+                    </div>
+                )}
+
+                {/* Save PDF Button */}
                 <button
                     className="save-pdf-button"
                     onClick={handleExportPDF}
@@ -273,12 +373,12 @@ function App() {
                     data-tooltip-content="Save to PDF"
                 >
                     {loadingPDF ? (
-                        <Loader className="spinner" size={24} />
+                        <Loader className="spinner" size={24}/>
                     ) : (
-                        <Download size={24} />
+                        <Download size={24}/>
                     )}
                 </button>
-                <Tooltip id="save-pdf-button" />
+                <Tooltip id="save-pdf-button"/>
             </div>
 
             {/* Main Content */}

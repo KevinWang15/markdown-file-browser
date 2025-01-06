@@ -91,6 +91,16 @@ tr:nth-child(even) {
     bottom: 0;
 }
 
+.side-button-bar button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin: 10px 0;
+    position: relative;
+}
+
+
+
 .save-pdf-button {
     background: none;
     border: none;
@@ -102,6 +112,7 @@ tr:nth-child(even) {
     position: relative; /* To contain the spinner */
 }
 
+
 .save-pdf-button:hover {
     color: #007bff;
 }
@@ -111,14 +122,109 @@ tr:nth-child(even) {
     cursor: not-allowed;
 }
 
+
 .spinner {
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    100% { transform: rotate(360deg); }
 }
+
+/* TOC Button Styles */
+.toc-button-container {
+    position: relative;
+}
+
+.toc-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.toc-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* TOC Overlay Styles */
+.toc-overlay-container {
+    position: absolute;
+    top: 10px;
+    left: 40px;
+    width: 500px;
+    line-height: 1.2;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: #ffffffee;
+    backdrop-filter: blur(1px);
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: none;
+    z-index: 1000;
+}
+
+.toc-button-container:hover .toc-overlay-container {
+    display: block;
+}
+
+.toc-overlay {
+    padding: 10px;
+}
+
+.toc-overlay h3 {
+    margin-top: 0;
+}
+
+.toc-overlay ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.toc-item {
+    margin: 5px 0;
+}
+
+.toc-item.level-1 {
+    font-weight: bold;
+}
+
+.toc-item.level-2 {
+    padding-left: 10px;
+}
+
+.toc-item.level-3 {
+    padding-left: 20px;
+}
+
+.toc-item.level-4 {
+    padding-left: 30px;
+}
+
+.toc-item.level-5 {
+    padding-left: 40px;
+}
+
+.toc-item.level-6 {
+    padding-left: 50px;
+}
+
+.toc-item a {
+    text-decoration: none;
+    color: #333;
+}
+
+.toc-item a:hover {
+    text-decoration: underline;
+}
+
+.toc-item.active a {
+    color: #007bff;
+    font-weight: bold;
+}
+
 
 .main-content {
     margin-left: 60px; /* Width of the side bar */
