@@ -187,6 +187,11 @@ tr:nth-child(even) {
     margin: 5px 0;
 }
 
+.toc-item.active a {
+    font-weight: bold;
+    color: #007BFF;
+}
+
 .toc-item.level-1 {
     font-weight: bold;
 }
