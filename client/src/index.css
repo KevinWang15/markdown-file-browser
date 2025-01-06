@@ -29,8 +29,16 @@ code {
         border: none !important;
     }
 
-    body{
-        margin: 0!important;
-        background: white!important;
+    body {
+        margin: 0 !important;
+        background: white !important;
+    }
+
+    .side-button-bar {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
     }
 }
