@@ -19,6 +19,13 @@ code {
     cursor: pointer;
 }
 
+h1.document-title {
+    padding-bottom: 10px;
+    font-size: 40px;
+    font-weight: normal;
+    border-bottom: 1px solid #DDD;
+}
+
 /* Hide the button in print mode */
 @media print {
     .save-pdf-button {
