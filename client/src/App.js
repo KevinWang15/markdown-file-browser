@@ -11,7 +11,7 @@ import treeview from "./highlighters/treeview";
 import pathex from "./highlighters/pathex";
 import apiEndpoints from "./highlighters/api-endpoints";
 import { Download, Loader, Menu } from 'lucide-react';
-import frontMatter from 'front-matter';
+import frontMatter from 'front-matter'; // Import front-matter
 
 // Initialize mermaid
 mermaid.initialize({
@@ -74,7 +74,7 @@ const TOCOverlay = ({ toc, onNavigate, currentSection }) => {
             <ul>
                 {toc.map((item, index) => (
                     <li key={index}
-                        className={`toc-item level-${item.level} ${item.node === currentSection ? 'active' : ''}`}>
+                        className={`toc-item level-${item.level} ${currentSection === item.id ? 'active' : ''}`}>
                         <a
                             href="#"
                             onClick={(e) => {
@@ -100,7 +100,7 @@ function App() {
     const pathname = window.location.pathname;
 
     const [toc, setToc] = useState([]);
-    const [currentSection, setCurrentSection] = useState(null); // Initialize with null
+    const [currentSection, setCurrentSection] = useState(null);
 
     // Get XPath of closest heading
     const getClosestHeadingXPath = () => {
@@ -274,36 +274,28 @@ function App() {
                 return;
             }
 
-            const threshold = 100; // Adjust as needed
-            let activeNode = null;
+            const headings = mainContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            const scrollPosition = window.scrollY + 100; // Adjust as needed
 
-            // Iterate through the ToC items to find the active section
-            for (let i = 0; i < toc.length; i++) {
-                const heading = toc[i].node;
-                const rect = heading.getBoundingClientRect();
+            let current = null;
 
-                if (rect.top <= threshold) {
-                    activeNode = heading;
-                } else {
-                    break;
+            headings.forEach((heading) => {
+                if (heading.offsetTop <= scrollPosition) {
+                    current = heading.id;
                 }
-            }
+            });
 
-            if (activeNode !== currentSection) {
-                setCurrentSection(activeNode);
+            if (current !== currentSection) {
+                setCurrentSection(current);
             }
         };
 
-        const mainContent = document.getElementsByClassName('main-content')[0];
-        mainContent.addEventListener('scroll', handleScroll);
-
-        // Initial check in case the user is not at the top
-        handleScroll();
+        window.addEventListener('scroll', handleScroll);
 
         return () => {
-            mainContent.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('scroll', handleScroll);
         };
-    }, [toc, currentSection]);
+    }, [currentSection]);
 
     // Extract TOC from rendered HTML using ref
     useEffect(() => {
@@ -328,7 +320,7 @@ function App() {
 
     const handleNavigate = (node) => {
         if (node) {
-            const mainContent = document.getElementsByClassName('main-content')[0];
+            let mainContent = document.getElementsByClassName('main-content')[0];
             mainContent.scrollTo({
                 top: node.getBoundingClientRect().top + node.parentElement.scrollTop - 20,
                 behavior: 'smooth',
