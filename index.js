@@ -78,10 +78,15 @@ app.get('/api/export/pdf', async (req, res) => {
 
         // Instead of page.waitForTimeout(), use a generic timeout:
         await new Promise((resolve) => setTimeout(resolve, 500));
-
+        await page.evaluate(() => {
+            const mainContent = document.querySelector('#main-content');
+            document.body.innerHTML = '';
+            document.body.appendChild(mainContent);
+        });
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true,
+            selector: '#main-content',
             margin: {
                 top: '30px',
                 right: '20px',
