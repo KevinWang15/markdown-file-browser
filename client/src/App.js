@@ -29,6 +29,9 @@ SyntaxHighlighter.registerLanguage('treeview', treeview);
 SyntaxHighlighter.registerLanguage('path-ex', pathex);
 SyntaxHighlighter.registerLanguage('api-endpoints', apiEndpoints);
 
+// Mermaid render cache
+const mermaidRenderCache = new Map();
+
 // Mermaid rendering component
 const MermaidDiagram = ({chart}) => {
     const [svg, setSvg] = useState('');
@@ -37,10 +40,22 @@ const MermaidDiagram = ({chart}) => {
     useEffect(() => {
         (async () => {
             try {
-                const {svg} = await mermaid.render(id, chart);
-                setSvg(svg);
+                // Check cache first
+                if (mermaidRenderCache.has(chart)) {
+                    console.log('[Mermaid] Using cached render');
+                    setSvg(mermaidRenderCache.get(chart));
+                    return;
+                }
+
+                console.log('[Mermaid] Cache miss, rendering:', id);
+                const {svg: renderedSvg} = await mermaid.render(id, chart);
+
+                // Cache the result
+                mermaidRenderCache.set(chart, renderedSvg);
+
+                setSvg(renderedSvg);
             } catch (error) {
-                console.error('Error rendering mermaid diagram:', error);
+                console.error('[Mermaid] Render error:', error);
                 setSvg(`<pre>Error rendering diagram: ${error.message}</pre>`);
             }
         })();
@@ -54,37 +69,106 @@ function App() {
     const [files, setFiles] = useState([]);
     const [loadingPDF, setLoadingPDF] = useState(false);
     const pathname = window.location.pathname;
+
+    // Get XPath of closest heading
+    const getClosestHeadingXPath = () => {
+        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        let closestHeading = null;
+        let minDistance = Infinity;
+        let relativePosition = 0;
+
+        headings.forEach(heading => {
+            const rect = heading.getBoundingClientRect();
+            const distance = Math.abs(rect.top);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestHeading = heading;
+                relativePosition = window.scrollY - heading.offsetTop;
+            }
+        });
+
+        if (!closestHeading) return null;
+
+        // Generate XPath
+        const xpath = getXPath(closestHeading);
+        console.log('[Scroll] Found closest heading:', {
+            xpath,
+            relativePosition,
+            text: closestHeading.textContent
+        });
+
+        return {xpath, relativePosition};
+    };
+
+    // Generate XPath for an element
+    const getXPath = (element) => {
+        const parts = [];
+        while (element && element.nodeType === Node.ELEMENT_NODE) {
+            let idx = 0;
+            let sibling = element;
+            while (sibling) {
+                if (sibling.nodeName === element.nodeName) idx++;
+                sibling = sibling.previousElementSibling;
+            }
+            const tagName = element.nodeName.toLowerCase();
+            parts.unshift(`${tagName}[${idx}]`);
+            element = element.parentNode;
+        }
+        return '/' + parts.join('/');
+    };
+
+    // Restore scroll position using XPath
+    const restoreScrollPosition = (scrollInfo) => {
+        if (!scrollInfo) return;
+
+        console.log('[Scroll] Attempting to restore using:', scrollInfo);
+
+        try {
+            const element = document.evaluate(
+                scrollInfo.xpath,
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+
+            if (element) {
+                const newScrollPosition = element.offsetTop + scrollInfo.relativePosition;
+                console.log('[Scroll] Restoring to position:', newScrollPosition);
+                window.scrollTo(0, newScrollPosition);
+            } else {
+                console.log('[Scroll] Target element not found');
+            }
+        } catch (error) {
+            console.log('[Scroll] Error restoring position:', error);
+        }
+    };
+
     useEffect(() => {
-        // Only subscribe to SSE if we’re viewing a specific file (pathname !== '/')
         if (pathname !== '/') {
             const sse = new EventSource('/sse');
 
-            // Listen for our custom 'file-changed' event
             sse.addEventListener('file-changed', (event) => {
-                // The event data is the changed filename, e.g. "README.md"
                 const changedFileName = event.data;
-
-                // Our local fileName is `pathname.slice(1)` => "README.md"
                 const currentFile = pathname.slice(1);
 
-                // If the changed file is the one we're currently viewing, refresh
                 if (changedFileName === currentFile) {
-                    // 1) store the current scroll position:
-                    const scrollPos = window.scrollY;
+                    const scrollInfo = getClosestHeadingXPath();
+                    console.log('[Refresh] Stored scroll info:', scrollInfo);
 
-                    // 2) re-fetch the current markdown
                     fetch(`/api/markdown/${currentFile}`)
                         .then(res => res.json())
                         .then(data => {
                             if (data.content) {
-                                // Update state, which triggers a re-render
                                 setMarkdown(data.content);
-                                // 3) restore scroll
-                                // We do it in a setTimeout(…, 0) or requestAnimationFrame
-                                // to ensure the DOM has updated:
-                                setTimeout(() => {
-                                    window.scrollTo(0, scrollPos);
-                                }, 0);
+
+                                // Wait for markdown to be fully rendered
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        console.log('[Render] Content rendered, restoring scroll');
+                                        restoreScrollPosition(scrollInfo);
+                                    });
+                                });
                             }
                         });
                 }
