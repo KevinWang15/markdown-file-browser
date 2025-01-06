@@ -150,6 +150,11 @@ function App() {
 
     useEffect(() => {
         if (pathname !== '/') {
+
+            if (navigator.webdriver) { // if running inside puppeteer
+                return;
+            }
+
             const sse = new EventSource('/sse');
 
             sse.addEventListener('file-changed', (event) => {
