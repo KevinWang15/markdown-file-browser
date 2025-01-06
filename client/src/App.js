@@ -269,7 +269,7 @@ function App() {
 
     useEffect(() => {
         const handleScroll = () => {
-            const mainContent = document.getElementsByClassName('main-content')[0];
+            const mainContent = document.getElementById('main-content');
             if (!mainContent) {
                 return;
             }
@@ -300,7 +300,7 @@ function App() {
     // Extract TOC from rendered HTML using ref
     useEffect(() => {
         const extractTOC = () => {
-            const mainContent = document.getElementsByClassName('main-content')[0];
+            const mainContent = document.getElementById('main-content');
 
             if (!mainContent) return;
             const headings = mainContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -362,7 +362,7 @@ function App() {
 
     const handleNavigate = (node) => {
         if (node) {
-            const mainContent = document.getElementsByClassName('main-content')[0];
+            const mainContent = document.getElementById('main-content');
             mainContent.scrollTo({
                 top: node.getBoundingClientRect().top + node.parentElement.scrollTop - 20,
                 behavior: 'smooth',
@@ -444,7 +444,7 @@ function App() {
             </div>
 
             {/* Main Content */}
-            <div className="main-content">
+            <div id="main-content">
                 {metadata.title && <h1 className="document-title">{metadata.title}</h1>}
                 <ReactMarkdown
                     children={markdown}
