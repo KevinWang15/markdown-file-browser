@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -11,7 +11,7 @@ import treeview from "./highlighters/treeview";
 import pathex from "./highlighters/pathex";
 import apiEndpoints from "./highlighters/api-endpoints";
 import { Download, Loader, Menu } from 'lucide-react';
-import frontMatter from 'front-matter'; // Import front-matter
+import frontMatter from 'front-matter';
 
 // Initialize mermaid
 mermaid.initialize({
@@ -318,9 +318,51 @@ function App() {
         extractTOC();
     }, [markdown]); // Run whenever markdown changes
 
+    useEffect(() => {
+        const updateActiveTOC = () => {
+            let activeIndex = -1;
+            const threshold = 100; // Adjust threshold as needed
+
+            for (let i = 0; i < toc.length; i++) {
+                const { node } = toc[i];
+                const rect = node.getBoundingClientRect();
+
+                if (rect.top <= threshold) {
+                    activeIndex = i;
+                } else {
+                    break;
+                }
+            }
+
+            // Remove 'active' class from all ToC items
+            const tocRoot = document.getElementsByClassName('toc-overlay')[0];
+            if (!tocRoot) {
+                return;
+            }
+            const tocListItems = tocRoot.querySelectorAll('.toc-item');
+            tocListItems.forEach((item) => item.classList.remove('active'));
+
+            // Add 'active' class to the current ToC item
+            if (activeIndex !== -1 && tocListItems[activeIndex]) {
+                tocListItems[activeIndex].classList.add('active');
+            }
+        };
+
+        // Set up setInterval to check active heading every 100ms
+        const intervalId = setInterval(() => {
+            updateActiveTOC();
+        }, 100);
+
+        // Initial call to set active ToC item
+        updateActiveTOC();
+
+        // Clean up the interval on component unmount
+        return () => clearInterval(intervalId);
+    }, [toc]);
+
     const handleNavigate = (node) => {
         if (node) {
-            let mainContent = document.getElementsByClassName('main-content')[0];
+            const mainContent = document.getElementsByClassName('main-content')[0];
             mainContent.scrollTo({
                 top: node.getBoundingClientRect().top + node.parentElement.scrollTop - 20,
                 behavior: 'smooth',
