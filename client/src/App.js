@@ -1,16 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import {Light as SyntaxHighlighter} from 'react-syntax-highlighter';
-import {github} from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import mermaid from 'mermaid';
 import remarkGfm from 'remark-gfm';
-import {Tooltip} from 'react-tooltip';
+import { Tooltip } from 'react-tooltip';
 import './styles.css';
 import * as AllLanguages from 'react-syntax-highlighter/dist/esm/languages/hljs';
 import treeview from "./highlighters/treeview";
 import pathex from "./highlighters/pathex";
 import apiEndpoints from "./highlighters/api-endpoints";
-import {Download, Loader, Menu} from 'lucide-react';
+import { Download, Loader, Menu } from 'lucide-react';
+import frontMatter from 'front-matter'; // Import front-matter
 
 // Initialize mermaid
 mermaid.initialize({
@@ -34,7 +35,7 @@ SyntaxHighlighter.registerLanguage('api-endpoints', apiEndpoints);
 const mermaidRenderCache = new Map();
 
 // Mermaid rendering component
-const MermaidDiagram = ({chart}) => {
+const MermaidDiagram = ({ chart }) => {
     const [svg, setSvg] = useState('');
     const [id] = useState(`mermaid-${Math.random().toString(36).substr(2, 9)}`);
 
@@ -49,7 +50,7 @@ const MermaidDiagram = ({chart}) => {
                 }
 
                 console.log('[Mermaid] Cache miss, rendering:', id);
-                const {svg: renderedSvg} = await mermaid.render(id, chart);
+                const { svg: renderedSvg } = await mermaid.render(id, chart);
 
                 // Cache the result
                 mermaidRenderCache.set(chart, renderedSvg);
@@ -62,11 +63,11 @@ const MermaidDiagram = ({chart}) => {
         })();
     }, [chart, id]);
 
-    return <div dangerouslySetInnerHTML={{__html: svg}}/>;
+    return <div dangerouslySetInnerHTML={{ __html: svg }} />;
 };
 
 // TOC Overlay Component
-const TOCOverlay = ({toc, onNavigate, currentSection}) => {
+const TOCOverlay = ({ toc, onNavigate, currentSection }) => {
     return (
         <div className="toc-overlay" role="navigation" aria-label="Table of Contents">
             <h3>Table of Contents</h3>
@@ -93,6 +94,7 @@ const TOCOverlay = ({toc, onNavigate, currentSection}) => {
 
 function App() {
     const [markdown, setMarkdown] = useState('');
+    const [metadata, setMetadata] = useState({}); // New state for metadata
     const [files, setFiles] = useState([]);
     const [loadingPDF, setLoadingPDF] = useState(false);
     const pathname = window.location.pathname;
@@ -127,7 +129,7 @@ function App() {
             text: closestHeading.textContent
         });
 
-        return {xpath, relativePosition};
+        return { xpath, relativePosition };
     };
 
     // Generate XPath for an element
@@ -195,7 +197,20 @@ function App() {
                         .then(res => res.json())
                         .then(data => {
                             if (data.content) {
-                                setMarkdown(data.content);
+                                // Parse the front matter using front-matter
+                                const parsed = frontMatter(data.content);
+
+                                // Set the document title from front matter or default to file name
+                                if (parsed.attributes && parsed.attributes.title) {
+                                    document.title = parsed.attributes.title;
+                                    setMetadata(parsed.attributes);
+                                } else {
+                                    document.title = currentFile;
+                                    setMetadata({});
+                                }
+
+                                // Set the markdown content without front matter
+                                setMarkdown(parsed.body);
 
                                 // Wait for markdown to be fully rendered
                                 requestAnimationFrame(() => {
@@ -230,20 +245,25 @@ function App() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.content) {
-                        setMarkdown(data.content);
-                        const titleMatch = data.content.match(/^(.*?)\n---/s);
-                        if (titleMatch) {
-                            document.title = titleMatch[1].trim();
+                        // Parse the front matter using front-matter
+                        const parsed = frontMatter(data.content);
+
+                        // Set the document title from front matter or default to file name
+                        if (parsed.attributes && parsed.attributes.title) {
+                            document.title = parsed.attributes.title;
+                            setMetadata(parsed.attributes); // Store metadata
                         } else {
                             document.title = fileName;
+                            setMetadata({});
                         }
+
+                        // Set the markdown content without front matter
+                        setMarkdown(parsed.body);
                     } else {
                         setMarkdown(`# Error\nCould not load ${fileName}`);
+                        setMetadata({});
                     }
                 })
-                .catch(() => {
-                    setMarkdown(`# Error\nCould not load ${fileName}`);
-                });
         }
     }, [pathname]);
 
@@ -289,7 +309,7 @@ function App() {
             headings.forEach((heading) => {
                 const level = parseInt(heading.tagName.substring(1));
                 const text = heading.textContent;
-                tocItems.push({level, text, node: heading});
+                tocItems.push({ level, text, node: heading });
             });
 
             setToc(tocItems);
@@ -356,10 +376,10 @@ function App() {
                         <button
                             className="toc-button"
                         >
-                            <Menu size={24}/>
+                            <Menu size={24} />
                         </button>
                         <div className="toc-overlay-container">
-                            <TOCOverlay toc={toc} onNavigate={handleNavigate} currentSection={currentSection}/>
+                            <TOCOverlay toc={toc} onNavigate={handleNavigate} currentSection={currentSection} />
                         </div>
                     </div>
                 )}
@@ -373,27 +393,28 @@ function App() {
                     data-tooltip-content="Save to PDF"
                 >
                     {loadingPDF ? (
-                        <Loader className="spinner" size={24}/>
+                        <Loader className="spinner" size={24} />
                     ) : (
-                        <Download size={24}/>
+                        <Download size={24} />
                     )}
                 </button>
-                <Tooltip id="save-pdf-button"/>
+                <Tooltip id="save-pdf-button" />
             </div>
 
             {/* Main Content */}
             <div className="main-content">
+                {metadata.title && <h1 className="document-title">{metadata.title}</h1>}
                 <ReactMarkdown
                     children={markdown}
                     remarkPlugins={[remarkGfm]}
                     components={{
-                        code({node, inline, className, children, ...props}) {
+                        code({ node, inline, className, children, ...props }) {
                             const match = /language-([\w-]+)/.exec(className || '');
                             const language = match ? match[1] : '';
 
                             if (!inline) {
                                 if (language === 'mermaid') {
-                                    return <MermaidDiagram chart={String(children).replace(/\n$/, '')}/>;
+                                    return <MermaidDiagram chart={String(children).replace(/\n$/, '')} />;
                                 }
 
                                 return (
