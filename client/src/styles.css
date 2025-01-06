@@ -49,3 +49,22 @@ blockquote {
 li {
     margin-bottom: 0.5rem;
 }
+
+table {
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 0.5em;
+}
+
+th {
+    background: #f0f0f0;
+}
+
+tr:nth-child(even) {
+    background: #fafafa;
+}
