@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "cra-template": "1.2.0",
+    "front-matter": "^4.0.2",
     "lucide-react": "^0.469.0",
     "mermaid": "^11.4.1",
     "react": "^19.0.0",
