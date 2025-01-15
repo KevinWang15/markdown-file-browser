@@ -255,3 +255,8 @@ tr:nth-child(even) {
 #main-content::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+
+img {
+    max-width: 100%;
+}
