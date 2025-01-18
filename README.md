@@ -5,7 +5,7 @@ This project allows you to browse and view multiple Markdown files stored in a `
 ## Major Features
 
 - **File Listing**: Automatically list all `.md` files in `./docs` when visiting the root URL `/`.
-- **Markdown Rendering**: Uses [`react-markdown`](https://github.com/remarkjs/react-markdown) for flexible and customizable Markdown rendering.
+- **Markdown Rendering**: Uses [`markdown-to-jsx`](https://github.com/probablyup/markdown-to-jsx) for flexible and efficient Markdown rendering.
 - **Syntax Highlighting**: Integrates with `react-syntax-highlighter` for code block highlighting.
 - **PDF Export**: Easily generate a PDF of the currently viewed Markdown page.
 - **Live Reload**: Automatically updates the rendered Markdown content when the source file changes, without losing your scroll position.
@@ -71,7 +71,7 @@ You can run the server and the React dev server separately for a better developm
   ```
   This starts the React development server at `http://localhost:3000`.
 
-Visiting `http://localhost:3000` now provides hot-reload, enabling faster iterative development and styling tweaks using `react-markdown`.
+Visiting `http://localhost:3000` now provides hot-reload, enabling faster iterative development and styling tweaks using `markdown-to-jsx`.
 
 ## Live Reload
 
@@ -125,13 +125,13 @@ Visiting `http://localhost:3000` now provides hot-reload, enabling faster iterat
     - `/<filename>.md`: Fetches `/api/markdown/<filename>.md` and displays the file's content.
     - "Save to PDF" button: Calls `/api/export/pdf` to retrieve a generated PDF file.
 
-Because we use `react-markdown`, you can customize the Markdown rendering extensively. Add custom renderers, plugins, or styling to achieve the desired look, which will also be reflected in the exported PDF.
+`markdown-to-jsx` provides a simple yet powerful way to customize Markdown rendering through its `options` prop and component overrides system. You can easily add custom components, override default element rendering, and apply custom styling that will be reflected in both the browser view and exported PDFs.
 
 ## Customization
 
 - **Adding Markdown Files**: Add `.md` files to `./docs` to make them automatically appear in the listing.
 - **URL Paths**: Navigate directly to `/<filename>.md` to view a specific file.
-- **Rendering Styles**: Modify `App.js` or add `react-markdown` plugins and custom renderers to change the appearance of rendered Markdown.
+- **Rendering Styles**: Modify `App.js` or add custom components through `markdown-to-jsx`'s `options.overrides` to change the appearance of rendered Markdown.
 - **PDF Styles**: Since Puppeteer uses print styles for generating PDFs, you can leverage `@media print` CSS rules to fine-tune the PDF appearance.
 
 ## Troubleshooting
