@@ -449,7 +449,7 @@ function App() {
       const mainContent = document.getElementById("main-content");
       mainContent.scrollTo({
         top:
-          node.getBoundingClientRect().top + node.parentElement.scrollTop - 20,
+          node.getBoundingClientRect().top + node.parentElement.parentElement.scrollTop - 20,
         behavior: "smooth",
       });
     }

@@ -1,5 +1,5 @@
 {
-  "name": "markdown-file-browser",
+  "name": "markdown-writing",
   "version": "1.0.0",
   "main": "index.js",
   "directories": {
@@ -11,6 +11,7 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "open": "^10.1.0",
+    "p-queue": "^8.0.1",
     "puppeteer": "^23.0.0"
   },
   "scripts": {
