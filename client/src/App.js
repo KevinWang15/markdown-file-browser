@@ -69,9 +69,9 @@ const MermaidDiagram = ({ chart }) => {
 const CodeBlock = ({ className, children }) => {
   // Check if this is a code block by detecting if children contains newlines
   // This helps distinguish between inline code and code blocks without language specification
-  const isCodeBlock = typeof children === 'string' && children.includes('\n');
+  const isCodeBlock = typeof children === "string" && children.includes("\n");
 
-  if(!isCodeBlock){
+  if (!isCodeBlock) {
     return <code>{children}</code>;
   }
 
@@ -119,6 +119,8 @@ const TOCOverlay = ({ toc, onNavigate, currentSection }) => {
     </div>
   );
 };
+
+const PageBreak = () => <div style={{ pageBreakBefore: "always" }}></div>;
 
 function App() {
   const [markdown, setMarkdown] = useState("");
@@ -485,6 +487,9 @@ function App() {
             overrides: {
               code: {
                 component: CodeBlock,
+              },
+              pagebreak: {
+                component: PageBreak,
               },
             },
           }}

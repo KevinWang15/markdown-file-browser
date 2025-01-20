@@ -21,7 +21,7 @@ code {
 
 h1.document-title {
     padding-bottom: 10px;
-    font-size: 40px;
+    font-size: 34px;
     font-weight: normal;
     border-bottom: 1px solid #DDD;
 }
@@ -47,5 +47,11 @@ h1.document-title {
 
     #main-content {
         margin-left: 0 !important;
+    }
+
+    img {
+        max-width: 100% !important;
+        /*margin-left: 50%;*/
+        /*transform: translateX(-50%);*/
     }
 }

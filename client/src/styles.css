@@ -1,7 +1,7 @@
 body {
     font-family: "Arial", sans-serif;
     margin: 0px;
-    background: #f8f9fa;
+    background: white;
 }
 
 .container {
@@ -29,7 +29,7 @@ code {
 }
 
 pre {
-    padding: 0.8rem 1.2rem!important;
+    padding: 0.8rem 1.2rem !important;
 }
 
 pre > code {
@@ -100,7 +100,6 @@ tr:nth-child(even) {
 }
 
 
-
 .save-pdf-button {
     background: none;
     border: none;
@@ -128,7 +127,9 @@ tr:nth-child(even) {
 }
 
 @keyframes spin {
-    100% { transform: rotate(360deg); }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* TOC Button Styles */
@@ -258,5 +259,9 @@ tr:nth-child(even) {
 
 
 img {
-    max-width: 100%;
+    max-width: 75%;
+}
+
+ul, ol {
+    margin: 1em 0;
 }
