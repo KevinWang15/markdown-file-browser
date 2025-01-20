@@ -6,11 +6,12 @@
     "doc": "docs"
   },
   "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11",
     "chokidar": "^4.0.3",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "open": "^10.1.0",
-    "puppeteer": "^23.10.3"
+    "puppeteer": "^23.0.0"
   },
   "scripts": {
     "start": "node index.js"
