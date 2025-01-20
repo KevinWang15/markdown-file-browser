@@ -34,7 +34,51 @@ SyntaxHighlighter.registerLanguage("api-endpoints", apiEndpoints);
 const mermaidRenderCache = new Map();
 
 // Mermaid rendering component
-const MermaidDiagram = ({ chart }) => {
+const MermaidDiagramServerSideRendering = ({ chart }) => {
+  const [imageSrc, setImageSrc] = useState("");
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchDiagram = async () => {
+      try {
+        // Encode the chart as base64
+        const encodedChart = btoa(chart);
+
+        // Fetch the rendered PNG from the server
+        const response = await fetch(`/api/render-mermaid/${encodedChart}`);
+
+        if (!response.ok) {
+          throw new Error("Failed to render diagram");
+        }
+
+        // Convert the response to blob and create URL
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setImageSrc(url);
+        setError(null);
+      } catch (error) {
+        console.error("[Mermaid] Error:", error);
+        setError("Error rendering diagram");
+      }
+    };
+
+    fetchDiagram();
+  }, [chart]);
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  return imageSrc ? (
+    <img
+      src={imageSrc}
+    />
+  ) : (
+    <div>Loading diagram...</div>
+  );
+};
+
+const MermaidDiagramLocal = ({ chart }) => {
   const [svg, setSvg] = useState("");
   const [id] = useState(`mermaid-${Math.random().toString(36).substr(2, 9)}`);
 
@@ -64,6 +108,15 @@ const MermaidDiagram = ({ chart }) => {
 
   return <div dangerouslySetInnerHTML={{ __html: svg }} />;
 };
+
+const MermaidDiagram = ({ chart }) => {
+
+  if (window.location.hash.indexOf("mermaid-server-side-rendering") > -1) {
+    return <MermaidDiagramServerSideRendering chart={chart} />;
+  }else{
+    return <MermaidDiagramLocal chart={chart} />;
+  }
+}
 
 // Code block component
 const CodeBlock = ({ className, children }) => {
